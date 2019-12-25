@@ -4,6 +4,7 @@ using System;
 using System.Configuration;
 using System.Text;
 using System.Threading.Tasks;
+using NetRadioPlayer.Device.Model;
 
 namespace NetRadioPlayer.Device.IoTHub
 {
@@ -25,9 +26,10 @@ namespace NetRadioPlayer.Device.IoTHub
       return device;
     }
 
-    public async Task SendNotification(string notification)
+    public async Task SendNotification(string notification, DeviceState state)
     {
-      var json = JsonConvert.SerializeObject(notification);
+      var messagePayload = new Device2CloudMessage(notification, state);
+      var json = JsonConvert.SerializeObject(messagePayload);
       var message = new Message(Encoding.ASCII.GetBytes(json));
       await this.device.SendEventAsync(message);
     }

@@ -2,6 +2,7 @@
 using NetRadioPlayer.Device.IoTHub;
 using System;
 using System.Threading.Tasks;
+using NetRadioPlayer.Device.Model;
 
 namespace NetRadioPlayer.Device
 {
@@ -18,13 +19,13 @@ namespace NetRadioPlayer.Device
             
       using (var radioPlayer = new RadioPlayer())
       {
-        radioPlayer.RadioPAused += async (object sender, EventArgs e) => { await iotDev.SendNotification("Paused"); };
-        radioPlayer.RadioPlaying += async (object sender, EventArgs e) => { await iotDev.SendNotification("Playing"); }; ;
+        radioPlayer.RadioPAused += async (object sender, EventArgs e) => { await iotDev.SendNotification("Paused", DeviceState.Paused); };
+        radioPlayer.RadioPlaying += async (object sender, EventArgs e) => { await iotDev.SendNotification("Playing", DeviceState.Playing); }; ;
 
         var commandListener = new IotHubCommandListener(radioPlayer);
         await commandListener.RegisterListener(device);
 
-        await iotDev.SendNotification("Radio player is ready");
+        await iotDev.SendNotification("Radio player is ready", DeviceState.DeviceReady);
 
         while (continuePlaying)
         {
@@ -36,6 +37,5 @@ namespace NetRadioPlayer.Device
     {
       continuePlaying = false;
     }
-
   }
 }
