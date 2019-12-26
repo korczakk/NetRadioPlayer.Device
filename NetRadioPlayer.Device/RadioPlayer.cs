@@ -5,9 +5,6 @@ namespace NetRadioPlayer.Device
 {
   public class RadioPlayer : IDisposable
   {
-    public event EventHandler RadioPlaying;
-    public event EventHandler RadioPAused;
-
     private readonly LibVLC lib;
     private MediaPlayer mediaPlayer;
     private Media media;
@@ -20,6 +17,11 @@ namespace NetRadioPlayer.Device
       mediaPlayer.Playing += OnPlaying;
       mediaPlayer.Paused += OnPaused;
     }
+
+    public event PlayerEventHandler RadioPlaying;
+    public event PlayerEventHandler RadioPaused;
+
+    public delegate void PlayerEventHandler(string uri);
 
     public void Play(string radioUrl)
     {
@@ -49,13 +51,13 @@ namespace NetRadioPlayer.Device
     private void OnPaused(object sender, EventArgs e)
     {
       Console.WriteLine("Paused");
-      RadioPAused.Invoke(this, null);
+      RadioPaused.Invoke(String.Empty);
     }
 
     private void OnPlaying(object sender, EventArgs e)
     {
       Console.WriteLine("Play");
-      RadioPlaying.Invoke(this, null);
+      RadioPlaying.Invoke(media.Mrl);
     }
   }
 }

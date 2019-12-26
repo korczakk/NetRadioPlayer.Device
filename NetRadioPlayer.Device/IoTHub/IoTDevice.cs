@@ -10,9 +10,9 @@ namespace NetRadioPlayer.Device.IoTHub
 {
   public class IoTDevice
   {
-    private DeviceClient device;
+    public DeviceClient Device { get; private set; }
 
-    public DeviceClient GetDevice()
+    public void ConnectToIoTHub()
     {
       string cn = GetConnectionstring();
       if (String.IsNullOrEmpty(cn))
@@ -20,18 +20,16 @@ namespace NetRadioPlayer.Device.IoTHub
         throw new Exception("Connection string is empty.");
       }
 
-      device = DeviceClient.CreateFromConnectionString(cn, TransportType.Mqtt);
+      Device = DeviceClient.CreateFromConnectionString(cn, TransportType.Mqtt);
       Console.WriteLine("Device connected.");
-      
-      return device;
     }
 
-    public async Task SendNotification(string notification, DeviceState state)
+    public async Task SendNotification(string notification, DeviceState state, string payload)
     {
-      var messagePayload = new Device2CloudMessage(notification, state);
+      var messagePayload = new Device2CloudMessage(notification, state, payload);
       var json = JsonConvert.SerializeObject(messagePayload);
       var message = new Message(Encoding.ASCII.GetBytes(json));
-      await this.device.SendEventAsync(message);
+      await Device.SendEventAsync(message);
     }
 
     private string GetConnectionstring()

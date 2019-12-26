@@ -6,10 +6,13 @@
 
     public DeviceState DeviceState { get; private set; }
 
-    public Device2CloudMessage(string message, DeviceState state)
+    public string JsonPayload { get; private set; }
+
+    public Device2CloudMessage(string message, DeviceState state, string jsonPayload)
     {
       MessageContent = message;
       DeviceState = state;
+      JsonPayload = jsonPayload;
     }
   }
 }

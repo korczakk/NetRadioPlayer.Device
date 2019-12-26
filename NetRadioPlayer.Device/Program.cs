@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.Devices.Client;
-using NetRadioPlayer.Device.IoTHub;
+﻿using NetRadioPlayer.Device.IoTHub;
 using System;
 using System.Threading.Tasks;
 using NetRadioPlayer.Device.Model;
@@ -9,33 +8,61 @@ namespace NetRadioPlayer.Device
   class Program
   {
     private static bool continuePlaying = true;
+    private static IoTDevice iotDev;
+    private static DeviceState deviceState = DeviceState.NotSet;
 
     static async Task Main(string[] args)
     {
-      SystemShutdown.ShuttingDown += OnShuttingDown;
+      iotDev = new IoTDevice();
+      iotDev.ConnectToIoTHub();
 
-      var iotDev = new IoTDevice();
-      DeviceClient device = iotDev.GetDevice();
-            
+      var commandListener = new IotHubCommandListener(iotDev.Device);
+      await commandListener.RegisterListener();
+      commandListener.Shutdown += OnShuttingdown;
+      commandListener.Shutdown += OnAskForState;
+
       using (var radioPlayer = new RadioPlayer())
       {
-        radioPlayer.RadioPAused += async (object sender, EventArgs e) => { await iotDev.SendNotification("Paused", DeviceState.Paused); };
-        radioPlayer.RadioPlaying += async (object sender, EventArgs e) => { await iotDev.SendNotification("Playing", DeviceState.Playing); }; ;
+        radioPlayer.RadioPaused += OnPaused;
+        radioPlayer.RadioPlaying += OnPlaying;
 
-        var commandListener = new IotHubCommandListener(radioPlayer);
-        await commandListener.RegisterListener(device);
+        commandListener.Play += payload => radioPlayer.Play(payload.Uri);
+        commandListener.Pause += x => radioPlayer.Pause();
 
-        await iotDev.SendNotification("Radio player is ready", DeviceState.DeviceReady);
+        deviceState = DeviceState.DeviceReady;
+        await iotDev.SendNotification("Radio player is ready", DeviceState.DeviceReady, String.Empty);
 
         while (continuePlaying)
         {
         }
       }
+
+      deviceState = DeviceState.TurnedOff;
+      Console.WriteLine("Finish.");
     }
 
-    public static void OnShuttingDown(object sender, EventArgs e)
+    private static async void OnAskForState(CommandPayload commandPayload)
     {
-      continuePlaying = false;
+      await iotDev.SendNotification("Current status...", deviceState, String.Empty);
+    }
+
+    private static async void OnShuttingdown(CommandPayload commandPayload)
+    {
+      await iotDev.SendNotification("Shutting down...", DeviceState.TurnedOff, String.Empty);
+      continuePlaying = false;      
+      SystemShutdown.Shutdown();
+    }
+
+    private static async void OnPlaying(string uri)
+    {
+      deviceState = DeviceState.Playing;
+      await iotDev.SendNotification("Playing", DeviceState.Playing, uri);
+    }
+
+    private static async void OnPaused(string uri)
+    {
+      deviceState = DeviceState.Paused;
+      await iotDev.SendNotification("Paused", DeviceState.Paused, String.Empty);      
     }
   }
 }

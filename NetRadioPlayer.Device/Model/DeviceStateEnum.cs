@@ -5,6 +5,7 @@
     DeviceReady,
     Paused,
     Playing,
-    NotSet
+    NotSet,
+    TurnedOff
   }
 }
