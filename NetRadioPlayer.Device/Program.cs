@@ -19,7 +19,7 @@ namespace NetRadioPlayer.Device
       var commandListener = new IotHubCommandListener(iotDev.Device);
       await commandListener.RegisterListener();
       commandListener.Shutdown += OnShuttingdown;
-      commandListener.Shutdown += OnAskForState;
+      commandListener.AskForState += OnAskForState;
 
       using (var radioPlayer = new RadioPlayer())
       {

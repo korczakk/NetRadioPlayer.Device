@@ -27,7 +27,7 @@ namespace NetRadioPlayer.Device.IoTHub
       await device.SetMethodHandlerAsync("play", OnStartPlaying, null);
       await device.SetMethodHandlerAsync("pause", OnPausePlayer, null);
       await device.SetMethodHandlerAsync("shutdown", OnShutDown, null);
-      await device.SetMethodHandlerAsync("whatisyourstatus", OnAskForStatus, null);
+      await device.SetMethodHandlerAsync("askforstate", OnAskForStatus, null);
     }
 
     private async Task<MethodResponse> OnStartPlaying(MethodRequest request, object userContext)
@@ -48,7 +48,7 @@ namespace NetRadioPlayer.Device.IoTHub
 
     private async Task<MethodResponse> OnShutDown(MethodRequest request, object userContext)
     {
-      Shutdown(null);
+      Shutdown.Invoke(null);
 
       string status = JsonConvert.SerializeObject("Shutting down...");
       return new MethodResponse(Encoding.ASCII.GetBytes(status), 200);
@@ -56,7 +56,7 @@ namespace NetRadioPlayer.Device.IoTHub
 
     private async Task<MethodResponse> OnAskForStatus(MethodRequest request, object userContext)
     {
-      AskForState(null);
+      AskForState.Invoke(null);
 
       return new MethodResponse(Encoding.ASCII.GetBytes(methodResponse), 200);
     }
