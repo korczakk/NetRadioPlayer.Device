@@ -19,7 +19,6 @@ namespace NetRadioPlayer.Device
       var commandListener = new IotHubCommandListener(iotDev.Device);
       await commandListener.RegisterListener();
       commandListener.Shutdown += OnShuttingdown;
-      commandListener.AskForState += OnAskForState;
 
       using (var radioPlayer = new RadioPlayer())
       {
@@ -28,6 +27,7 @@ namespace NetRadioPlayer.Device
 
         commandListener.Play += payload => radioPlayer.Play(payload.Uri);
         commandListener.Pause += x => radioPlayer.Pause();
+        commandListener.AskForState += async cmd => await iotDev.SendNotification("Current status...", deviceState, radioPlayer.CurrentlyPlaying);
 
         deviceState = DeviceState.DeviceReady;
         await iotDev.SendNotification("Radio player is ready", DeviceState.DeviceReady, String.Empty);
@@ -39,11 +39,6 @@ namespace NetRadioPlayer.Device
 
       deviceState = DeviceState.TurnedOff;
       Console.WriteLine("Finish.");
-    }
-
-    private static async void OnAskForState(CommandPayload commandPayload)
-    {
-      await iotDev.SendNotification("Current status...", deviceState, String.Empty);
     }
 
     private static async void OnShuttingdown(CommandPayload commandPayload)

@@ -23,6 +23,8 @@ namespace NetRadioPlayer.Device
 
     public delegate void PlayerEventHandler(string uri);
 
+    public string CurrentlyPlaying { get; private set; }
+
     public void Play(string radioUrl)
     {
       if (String.IsNullOrEmpty(radioUrl))
@@ -32,7 +34,9 @@ namespace NetRadioPlayer.Device
 
       media = new Media(lib, radioUrl, FromType.FromLocation);
       mediaPlayer.Media = media;
-      mediaPlayer.Play();      
+      mediaPlayer.Play();
+
+      CurrentlyPlaying = radioUrl;
     }
 
     public void Pause()
