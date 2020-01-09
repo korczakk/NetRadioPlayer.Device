@@ -39,13 +39,14 @@ namespace NetRadioPlayer.Device
 
       deviceState = DeviceState.TurnedOff;
       Console.WriteLine("Finish.");
+      
+      SystemShutdown.Shutdown();
     }
 
     private static async void OnShuttingdown(CommandPayload commandPayload)
     {
       await iotDev.SendNotification("Shutting down...", DeviceState.TurnedOff, String.Empty);
       continuePlaying = false;      
-      SystemShutdown.Shutdown();
     }
 
     private static async void OnPlaying(string uri)

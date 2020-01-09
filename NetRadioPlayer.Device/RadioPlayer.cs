@@ -47,8 +47,11 @@ namespace NetRadioPlayer.Device
     public void Dispose()
     {
       lib.Dispose();
-      mediaPlayer.Dispose();
-      media.Dispose();
+      
+      if(media != null)
+        media.Dispose();
+
+      mediaPlayer.Dispose();      
       Console.WriteLine("Objects disposed");
     }
 
