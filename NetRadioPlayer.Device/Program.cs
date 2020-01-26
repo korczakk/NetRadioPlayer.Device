@@ -13,6 +13,13 @@ namespace NetRadioPlayer.Device
 
     static async Task Main(string[] args)
     {
+      Console.WriteLine("Check if netowrk connection is available.");
+      while (!ConnectivityChecker.CheckIfDeviceConected())
+      {
+        Console.WriteLine("No network connection. Trying in 3 seconds.");
+        await Task.Delay(TimeSpan.FromSeconds(3));
+      }
+
       iotDev = new IoTDevice();
       iotDev.ConnectToIoTHub();
 

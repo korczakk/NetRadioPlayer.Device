@@ -7,7 +7,8 @@ namespace NetRadioPlayer.Device
   {
     public static void Shutdown()
     {
-      Process.Start("sudo", "/sbin/shutdown -h now");
+      Console.WriteLine("Shutting down...");
+      Process.Start("sudo", "poweroff");
     }
   }
 }
