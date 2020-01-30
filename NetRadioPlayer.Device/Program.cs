@@ -28,6 +28,8 @@ namespace NetRadioPlayer.Device
         int attempts = 0;
         do
         {
+          Console.WriteLine($"Registering events. Attempt{attempts}");
+
           bool registartionStatus = await commandListener.RegisterListener();
 
           attempts = registartionStatus ? 3 : attempts = +1;
