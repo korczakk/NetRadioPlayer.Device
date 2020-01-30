@@ -4,7 +4,7 @@ namespace NetRadioPlayer.Device
 {
   public class ConnectivityChecker
   {
-    public static bool CheckIfDeviceConected()
+    public static bool CheckIfNetworkConnected()
     {
       try
       {

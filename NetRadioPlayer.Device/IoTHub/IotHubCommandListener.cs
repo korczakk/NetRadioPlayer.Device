@@ -1,6 +1,5 @@
 ﻿using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
-using System;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,35 +8,36 @@ namespace NetRadioPlayer.Device.IoTHub
   public class IotHubCommandListener
   {    
     private string methodResponse = JsonConvert.SerializeObject("Recieved and processing");
-    private DeviceClient device;
+    private IoTDevice device;
 
-    public IotHubCommandListener(DeviceClient device)
+    public IotHubCommandListener(IoTDevice device)
     {      
       this.device = device;
     }
 
-    public event CommandHandler Play;
-    public event CommandHandler Pause;
-    public event CommandHandler Shutdown;
-    public event CommandHandler AskForState;
-    public event CommandHandler SetVolume;
-
-    public delegate void CommandHandler(CommandPayload commandPayload);
-
-    public async Task RegisterListener()
+    public async Task<bool> RegisterListener()
     {
-      await device.SetMethodHandlerAsync("play", OnStartPlaying, null);
-      await device.SetMethodHandlerAsync("pause", OnPausePlayer, null);
-      await device.SetMethodHandlerAsync("shutdown", OnShutDown, null);
-      await device.SetMethodHandlerAsync("askforstate", OnAskForStatus, null);
-      await device.SetMethodHandlerAsync("setvolume", OnSetVolume, null);
+      try
+      {
+        await device.ClientDevice.SetMethodHandlerAsync("play", OnStartPlaying, null);
+        await device.ClientDevice.SetMethodHandlerAsync("pause", OnPausePlayer, null);
+        await device.ClientDevice.SetMethodHandlerAsync("shutdown", OnShutDown, null);
+        await device.ClientDevice.SetMethodHandlerAsync("askforstate", OnAskForStatus, null);
+        await device.ClientDevice.SetMethodHandlerAsync("setvolume", OnSetVolume, null);
+
+        return true;
+      }
+      catch
+      {
+        return false;
+      }
     }
 
     private async Task<MethodResponse> OnSetVolume(MethodRequest request, object userContext)
     {
       CommandPayload payload = JsonConvert.DeserializeObject<CommandPayload>(request.DataAsJson);
 
-      SetVolume.Invoke(payload);
+      await device.SetVolume(payload.VolumePercent);
 
       return new MethodResponse(Encoding.ASCII.GetBytes(methodResponse), 200);
     }
@@ -46,21 +46,21 @@ namespace NetRadioPlayer.Device.IoTHub
     {
       CommandPayload payload = JsonConvert.DeserializeObject<CommandPayload>(request.DataAsJson);
 
-      Play.Invoke(payload);
+      await device.Play(payload.Uri);
 
       return new MethodResponse(Encoding.ASCII.GetBytes(methodResponse), 200);
     }
 
     private async Task<MethodResponse> OnPausePlayer(MethodRequest request, object userContext)
     {
-      Pause.Invoke(null);
+      await device.Pause();
 
       return new MethodResponse(Encoding.ASCII.GetBytes(methodResponse), 200);
     }
 
     private async Task<MethodResponse> OnShutDown(MethodRequest request, object userContext)
     {
-      Shutdown.Invoke(null);
+      await device.ShutDown();
 
       string status = JsonConvert.SerializeObject("Shutting down...");
       return new MethodResponse(Encoding.ASCII.GetBytes(status), 200);
@@ -68,7 +68,7 @@ namespace NetRadioPlayer.Device.IoTHub
 
     private async Task<MethodResponse> OnAskForStatus(MethodRequest request, object userContext)
     {
-      AskForState.Invoke(null);
+      await device.GiveCurrentState();
 
       return new MethodResponse(Encoding.ASCII.GetBytes(methodResponse), 200);
     }
