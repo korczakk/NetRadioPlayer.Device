@@ -31,13 +31,14 @@ namespace NetRadioPlayer.Device
       {
         radioPlayer.RadioPaused += OnPaused;
         radioPlayer.RadioPlaying += OnPlaying;
+        radioPlayer.VolumeChanged += OnVolumeChanged;
 
         commandListener.Play += payload => radioPlayer.Play(payload.Uri);
         commandListener.Pause += x => radioPlayer.Pause();
-        commandListener.AskForState += async cmd => await iotDev.SendNotification("Current status...", deviceState, radioPlayer.CurrentlyPlaying);
+        commandListener.AskForState += async cmd => await iotDev.SendNotification("Current status...", deviceState, new MediaPlayerState(radioPlayer.CurrentlyPlaying, radioPlayer.CurrentVolume));
 
         deviceState = DeviceState.DeviceReady;
-        await iotDev.SendNotification("Radio player is ready", DeviceState.DeviceReady, String.Empty);
+        await iotDev.SendNotification("Radio player is ready", DeviceState.DeviceReady, new MediaPlayerState(String.Empty, 0));
 
         while (continuePlaying)
         {
@@ -50,22 +51,27 @@ namespace NetRadioPlayer.Device
       SystemShutdown.Shutdown();
     }
 
+    private static async void OnVolumeChanged(string uri, int volumePercent)
+    {
+      await iotDev.SendNotification("VolumeChanged", DeviceState.Playing, new MediaPlayerState(uri, volumePercent));
+    }
+
     private static async void OnShuttingdown(CommandPayload commandPayload)
     {
-      await iotDev.SendNotification("Shutting down...", DeviceState.TurnedOff, String.Empty);
+      await iotDev.SendNotification("Shutting down...", DeviceState.TurnedOff, new MediaPlayerState(String.Empty, 0));
       continuePlaying = false;      
     }
 
-    private static async void OnPlaying(string uri)
+    private static async void OnPlaying(string uri, int volumePercent)
     {
       deviceState = DeviceState.Playing;
-      await iotDev.SendNotification("Playing", DeviceState.Playing, uri);
+      await iotDev.SendNotification("Playing", DeviceState.Playing, new MediaPlayerState(uri, volumePercent));
     }
 
-    private static async void OnPaused(string uri)
+    private static async void OnPaused(string uri, int volumePercent)
     {
       deviceState = DeviceState.Paused;
-      await iotDev.SendNotification("Paused", DeviceState.Paused, String.Empty);      
+      await iotDev.SendNotification("Paused", DeviceState.Paused, new MediaPlayerState(String.Empty, volumePercent));      
     }
   }
 }

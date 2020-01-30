@@ -24,9 +24,9 @@ namespace NetRadioPlayer.Device.IoTHub
       Console.WriteLine("Device connected.");
     }
 
-    public async Task SendNotification(string notification, DeviceState state, string payload)
+    public async Task SendNotification(string notification, DeviceState state, MediaPlayerState playerState)
     {
-      var messagePayload = new Device2CloudMessage(notification, state, payload);
+      var messagePayload = new Device2CloudMessage(notification, state, playerState);
       var json = JsonConvert.SerializeObject(messagePayload);
       var message = new Message(Encoding.ASCII.GetBytes(json));
       await Device.SendEventAsync(message);

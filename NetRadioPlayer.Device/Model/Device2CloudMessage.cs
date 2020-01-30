@@ -11,14 +11,14 @@ namespace NetRadioPlayer.Device.Model
     [JsonConverter(typeof(StringEnumConverter))]
     public DeviceState DeviceState { get; private set; }
 
-    public string JsonPayload { get; private set; }
+    public MediaPlayerState PlayerState { get; private set; }
 
     public DateTime EventTime { get; set; }
-    public Device2CloudMessage(string message, DeviceState state, string jsonPayload)
+    public Device2CloudMessage(string message, DeviceState state, MediaPlayerState playerState)
     {
       MessageContent = message;
       DeviceState = state;
-      JsonPayload = jsonPayload;
+      PlayerState = playerState;
       EventTime = DateTime.UtcNow;
     }
   }
