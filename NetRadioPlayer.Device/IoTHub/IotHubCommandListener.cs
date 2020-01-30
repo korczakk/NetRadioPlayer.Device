@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Devices.Client;
+using NetRadioPlayer.Device.Model;
 using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace NetRadioPlayer.Device.IoTHub
 
     private async Task<MethodResponse> OnSetVolume(MethodRequest request, object userContext)
     {
-      CommandPayload payload = JsonConvert.DeserializeObject<CommandPayload>(request.DataAsJson);
+      MediaPlayerState payload = JsonConvert.DeserializeObject<MediaPlayerState>(request.DataAsJson);
 
       await device.SetVolume(payload.VolumePercent);
 
@@ -44,9 +45,9 @@ namespace NetRadioPlayer.Device.IoTHub
 
     private async Task<MethodResponse> OnStartPlaying(MethodRequest request, object userContext)
     {
-      CommandPayload payload = JsonConvert.DeserializeObject<CommandPayload>(request.DataAsJson);
+      MediaPlayerState payload = JsonConvert.DeserializeObject<MediaPlayerState>(request.DataAsJson);
 
-      await device.Play(payload.Uri);
+      await device.Play(payload.RadioUrl);
 
       return new MethodResponse(Encoding.ASCII.GetBytes(methodResponse), 200);
     }
